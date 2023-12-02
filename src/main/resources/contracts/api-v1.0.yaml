@@ -1,0 +1,76 @@
+openapi: '3.0.3'
+info:
+  version: 0.0.1
+  title: Balances Service
+servers:
+  - url: http://localhost/api/v1
+    description: local
+
+paths:
+  /balances:
+    get:
+      tags:
+        - "Balances"
+      summary: "Get a balance of card"
+      operationId: getBalanceByCard
+      parameters:
+        - $ref: '#/components/parameters/cardId'
+      responses:
+        "200":
+          description: "Success"
+
+  /balances/add/{points}:
+    post:
+      tags:
+        - "Balances"
+      summary: "Add points by card identifier"
+      operationId: addPoints
+      parameters:
+        - $ref: '#/components/parameters/cardId'
+        - $ref: '#/components/parameters/pointsValue'
+      responses:
+        "200":
+          description: "Task has been created"
+
+  /balances/spend/{points}:
+    post:
+      tags:
+        - "Balances"
+      summary: "Spend points by card identifier"
+      operationId: spendPoints
+      parameters:
+        - $ref: '#/components/parameters/cardId'
+        - $ref: '#/components/parameters/pointsValue'
+      responses:
+        "200":
+          description: "Balance has been created"
+
+  /healthcheck:
+    get:
+      tags:
+        - "Service"
+      summary: "Check service functionality"
+      operationId: healthCheck
+      responses:
+        "200":
+          description: "I'm alive"
+
+components:
+  parameters:
+    cardId:
+      name: cardId
+      in: query
+      description: "Card identifier"
+      required: true
+      schema:
+        type: integer
+        format: int64
+    pointsValue:
+      name: points
+      in: path
+      description: "Number of points"
+      required: true
+      schema:
+        type: integer
+        format: int32
+

@@ -1,0 +1,13 @@
+.idea
+.vscode
+
+.gradle
+!gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
+
+build/
+generated
+out/
+
+src/main/resources/application-dev.yml

@@ -1,0 +1,9 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_URL}/?currentSchema=public
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  flyway:
+    url: jdbc:postgresql://${POSTGRES_URL}/?currentSchema=public
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
