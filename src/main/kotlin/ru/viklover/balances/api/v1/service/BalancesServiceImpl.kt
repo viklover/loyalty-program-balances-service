@@ -8,6 +8,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 import ru.viklover.balances.repository.Balance
 import ru.viklover.balances.repository.BalanceRepository
@@ -34,6 +35,7 @@ class BalancesServiceImpl(
         return BalanceDto(cardId, balance)
     }
 
+    @Transactional
     override suspend fun spendPoints(cardId: Long, points: Int) = coroutineScope {
 
         val balance = balancesRepository.getBalanceByCardId(cardId) ?: 0
