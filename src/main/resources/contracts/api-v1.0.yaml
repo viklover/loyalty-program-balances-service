@@ -3,7 +3,7 @@ info:
   version: 0.0.1
   title: Balances Service
 servers:
-  - url: http://localhost/api/v1
+  - url: http://localhost:8001/api/v1
     description: local
 
 paths:
@@ -17,6 +17,10 @@ paths:
         - $ref: '#/components/parameters/cardId'
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceDto'
           description: "Success"
 
   /balances/add/{points}:
@@ -28,6 +32,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/cardId'
         - $ref: '#/components/parameters/pointsValue'
+        - $ref: '#/components/parameters/expirationDate'
       responses:
         "200":
           description: "Task has been created"
@@ -43,24 +48,30 @@ paths:
         - $ref: '#/components/parameters/pointsValue'
       responses:
         "200":
-          description: "Balance has been created"
-
-  /healthcheck:
-    get:
-      tags:
-        - "Service"
-      summary: "Check service functionality"
-      operationId: healthCheck
-      responses:
-        "200":
-          description: "I'm alive"
+          description: "Success"
+        "406":
+          description: "Not enough points to spend"
 
 components:
+  schemas:
+    BalanceDto:
+      type: object
+      required:
+        - cardId
+        - value
+      properties:
+        cardId:
+          type: integer
+          format: int64
+        value:
+          type: integer
+          format: int32
   parameters:
     cardId:
       name: cardId
       in: query
       description: "Card identifier"
+      example: "12"
       required: true
       schema:
         type: integer
@@ -69,8 +80,16 @@ components:
       name: points
       in: path
       description: "Number of points"
+      example: "12"
       required: true
       schema:
         type: integer
         format: int32
-
+    expirationDate:
+      name: expirationDate
+      in: query
+      description: "Time presented in ISO-8601 format"
+      example: "2050-01-01T00:00:00Z"
+      required: true
+      schema:
+        type: string
