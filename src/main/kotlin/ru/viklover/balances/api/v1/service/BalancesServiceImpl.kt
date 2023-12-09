@@ -10,7 +10,6 @@ import kotlinx.coroutines.coroutineScope
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-import ru.viklover.balances.repository.Balance
 import ru.viklover.balances.repository.BalanceRepository
 
 import ru.viklover.balances.api.v1.exception.NotEnoughPointsException
@@ -26,7 +25,7 @@ class BalancesServiceImpl(
         val instant = Instant.parse(expirationDate)
 
         GlobalScope.launch {
-            balancesRepository.save(Balance(cardId = cardId, value = points, expirationDate = instant))
+            balancesRepository.createBalance(cardId, points, instant)
         }
     }
 
@@ -53,21 +52,23 @@ class BalancesServiceImpl(
             if (bufferPoints == 0)
                 return@collect
 
+            var balanceValue = it.value
+
             when {
                 it.value >= bufferPoints -> {
-                    it.value -= bufferPoints
+                    balanceValue -= bufferPoints
                     bufferPoints = 0
                 }
                 it.value < bufferPoints -> {
                     bufferPoints -= it.value
-                    it.value = 0
+                    balanceValue = 0
                 }
             }
 
-            if (it.value == 0) {
+            if (balanceValue == 0) {
                 balancesRepository.deleteById(it.id)
             } else {
-                balancesRepository.updateValueBalanceById(it.id, it.value)
+                balancesRepository.updateValueBalanceById(it.id, balanceValue)
             }
         }
     }
