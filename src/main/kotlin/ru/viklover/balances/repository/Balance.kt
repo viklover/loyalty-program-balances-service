@@ -12,7 +12,7 @@ import org.springframework.data.relational.core.mapping.Table
 class Balance(
     @Id
     val id: UUID,
-    val value: Int,
+    var value: Int,
     var cardId: Long,
     var expirationDate: Instant,
     val createdAt: LocalDateTime,

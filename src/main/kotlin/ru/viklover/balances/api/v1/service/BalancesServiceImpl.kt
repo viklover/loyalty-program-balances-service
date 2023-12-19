@@ -3,6 +3,7 @@ package ru.viklover.balances.api.v1.service
 import java.time.Instant
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.coroutineScope
@@ -14,6 +15,7 @@ import ru.viklover.balances.repository.BalanceRepository
 
 import ru.viklover.balances.api.v1.exception.NotEnoughPointsException
 import ru.viklover.balances.contracts.v1.models.BalanceDto
+import ru.viklover.balances.repository.Balance
 
 @Service
 class BalancesServiceImpl(
@@ -37,39 +39,52 @@ class BalancesServiceImpl(
     @Transactional
     override suspend fun spendPoints(cardId: Long, points: Int) = coroutineScope {
 
-        val balance = balancesRepository.getBalanceByCardId(cardId) ?: 0
+        val balances = balancesRepository.findBalancesByCardIdOrderByCreatedAt(cardId).toList()
+
+        var balance = 0
+
+        balances.forEach {
+            balance += it.value
+        }
 
         if (balance < points) {
             throw NotEnoughPointsException(points, balance, cardId)
         }
 
-        val balances = balancesRepository.findBalancesByCardIdOrderByCreatedAt(cardId)
+        val updatedBalances = mutableListOf<Balance>()
+        val removedBalances = mutableListOf<Balance>()
 
         var bufferPoints = points
 
-        balances.collect {
+        balances.forEach {
 
             if (bufferPoints == 0)
-                return@collect
-
-            var balanceValue = it.value
+                return@forEach
 
             when {
                 it.value >= bufferPoints -> {
-                    balanceValue -= bufferPoints
+                    it.value -= bufferPoints
                     bufferPoints = 0
                 }
                 it.value < bufferPoints -> {
                     bufferPoints -= it.value
-                    balanceValue = 0
+                    it.value = 0
                 }
             }
 
-            if (balanceValue == 0) {
-                balancesRepository.deleteById(it.id)
+            if (it.value == 0) {
+                removedBalances.add(it)
             } else {
-                balancesRepository.updateValueBalanceById(it.id, balanceValue)
+                updatedBalances.add(it)
             }
+        }
+
+        updatedBalances.forEach {
+            balancesRepository.updateValueBalanceById(it.id, it.value)
+        }
+
+        removedBalances.forEach {
+            balancesRepository.deleteById(it.id)
         }
     }
 }
