@@ -1,4 +1,4 @@
-CREATE TABLE BALANCE
+CREATE TABLE IF NOT EXISTS BALANCE
 (
     id              UUID PRIMARY KEY                  DEFAULT gen_random_uuid(),
     card_id         BIGSERIAL                NOT NULL,
